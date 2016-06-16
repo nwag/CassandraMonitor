@@ -16,23 +16,25 @@ import javax.management.remote.JMXServiceURL;
  */
 public class Main{
 
-	private final static int SAMPLETIME_MS = 5000;
+	// define connection and sampling interval
+	private final static String SERVER_IP = "1.2.3.4";
+	private final static int SERVER_PORT = 7199;
+	private final static int SAMPLETIME_IN_MS = 5000;
 
 	private static Logger logger = Logger.getLogger("CassandraStats");
 	private static FileHandler fh;
 
 	public static void main( String[] args ) {
 		try {
-			JMXServiceURL url = new JMXServiceURL("service:jmx:rmi:///jndi/rmi://134.60.64.93:7199/jmxrmi");
+			JMXServiceURL url = new JMXServiceURL("service:jmx:rmi:///jndi/rmi://"+SERVER_IP+":"+SERVER_PORT+"/jmxrmi");
 			JMXConnector jmxc = JMXConnectorFactory.connect(url, null); 
 			MBeanServerConnection mbsc = jmxc.getMBeanServerConnection();
 
 			long unixTimestamp = Instant.now().getEpochSecond();
-			fh = new FileHandler("../CassandraMonitor/stats"+unixTimestamp+".log");  
+			fh = new FileHandler(System.getProperty("user.dir")+"/stats"+unixTimestamp+".log");  
 			logger.addHandler(fh);
 			SimpleFormatter formatter = new SimpleFormatter();  
 			fh.setFormatter(formatter);  
-
 
 			ObjectName attribute0 = new ObjectName("org.apache.cassandra.metrics:type=ColumnFamily,name=TotalDiskSpaceUsed");
 			ObjectName attribute1 = new ObjectName("org.apache.cassandra.metrics:type=ColumnFamily,name=ReadLatency");
@@ -51,11 +53,12 @@ public class Main{
 				String attribute3Status =  mbsc.getAttribute(attribute3, "Value").toString();
 				String attribute4Status =  mbsc.getAttribute(attribute4, "Value").toString();
 
-				logger.info("TotalDiskSpaceUsed: "+attribute0Status+" "+attribute0Unit+"\nReadLatency: "+attribute1Status+" "+attribute1Unit+"\nWriteLatency: "+ attribute2Status+" "+attribute2Unit+"\nconnectedNativeClients: "+attribute3Status+"\nconnectedThriftClients: "+attribute4Status);
-				Thread.sleep(SAMPLETIME_MS);
+				logger.info("TotalDiskSpaceUsed: "+attribute0Status+" "+attribute0Unit+"\nReadLatency: "+attribute1Status+" "
+						+attribute1Unit+"\nWriteLatency: "+ attribute2Status+" "+attribute2Unit+"\nconnectedNativeClients: "
+						+attribute3Status+"\nconnectedThriftClients: "+attribute4Status);
+				Thread.sleep(SAMPLETIME_IN_MS);
 			}
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	} 

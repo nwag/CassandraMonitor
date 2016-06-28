@@ -17,7 +17,7 @@ import javax.management.remote.JMXServiceURL;
 public class Main{
 
 	// define connection and sampling interval
-	private final static String SERVER_IP = "134.60.64.93";
+	private final static String SERVER_IP = "1.2.3.4";
 	private final static int SERVER_PORT = 7199;
 	private final static int SAMPLETIME_IN_MS = 5000;
 

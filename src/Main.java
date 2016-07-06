@@ -5,6 +5,7 @@ import java.util.logging.SimpleFormatter;
 
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
+import javax.management.openmbean.CompositeData;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
@@ -47,6 +48,8 @@ public class Main{
 			ObjectName attribute8 = new ObjectName("org.apache.cassandra.metrics:type=ColumnFamily,name=WriteLatency");
 			ObjectName attribute9 = new ObjectName("org.apache.cassandra.metrics:type=ColumnFamily,keyspace=ycsb,scope=usertable,name=ReadLatency");
 			ObjectName attribute10 = new ObjectName("org.apache.cassandra.metrics:type=ColumnFamily,keyspace=ycsb,scope=usertable,name=WriteLatency");
+			ObjectName attribute11 = new ObjectName("java.lang:type=OperatingSystem");
+			ObjectName attribute12 = new ObjectName("java.lang:type=Memory");
 
 			String attribute0Unit = "byte";
 			String attribute1Unit =  mbsc.getAttribute(attribute1, "DurationUnit").toString();
@@ -64,10 +67,17 @@ public class Main{
 				String attribute8Status =  mbsc.getAttribute(attribute8, "OneMinuteRate").toString();
 				String attribute9Status =  mbsc.getAttribute(attribute9, "OneMinuteRate").toString();
 				String attribute10Status =  mbsc.getAttribute(attribute10, "OneMinuteRate").toString();
+				String attribute11Status =  mbsc.getAttribute(attribute11, "ProcessCpuLoad").toString();
+				CompositeData attribute12H =  (CompositeData) mbsc.getAttribute(attribute12, "HeapMemoryUsage");
+				CompositeData attribute12NH =  (CompositeData) mbsc.getAttribute(attribute12, "NonHeapMemoryUsage");
+				String attribute12StatusH = attribute12H.get("used").toString();
+				String attribute12StatusNH = attribute12NH.get("used").toString();
 
 				String totalOneMinuteRate0 =String.valueOf(Double.parseDouble(attribute5Status)+Double.parseDouble(attribute6Status));
 				String totalOneMinuteRate1 =String.valueOf(Double.parseDouble(attribute7Status)+Double.parseDouble(attribute8Status));
 				String totalOneMinuteRate2 =String.valueOf(Double.parseDouble(attribute9Status)+Double.parseDouble(attribute10Status));
+				String totalMemoryHeapUsage = String.valueOf(Double.parseDouble(attribute12StatusH)+Double.parseDouble(attribute12StatusNH));
+
 				logger.info("TotalDiskSpaceUsed: "+attribute0Status+" "+attribute0Unit+"\nReadLatency: "+attribute1Status+" "
 						+attribute1Unit+"\nWriteLatency: "+ attribute2Status+" "+attribute1Unit+"\nconnectedNativeClients: "
 						+attribute3Status+"\nconnectedThriftClients: "+attribute4Status+"\nReadOneMinuteRate(ClientRequest): "
@@ -77,7 +87,8 @@ public class Main{
 						+attribute5Unit+"\nTotalOneMinuteRate(ColumnFamily): "+totalOneMinuteRate1+" "+attribute5Unit
 						+"\nReadOneMinuteRate(YCSB): "+attribute9Status+" "+attribute5Unit+"\nWriteOneMinuteRate(YCSB): "
 						+attribute10Status+" "+attribute5Unit+"\nTotalOneMinuteRate(YCSB): "+totalOneMinuteRate2
-						+" "+attribute5Unit);
+						+" "+attribute5Unit+"\nProcessCpuLoad: "+attribute11Status+"\nTotalMemoryHeapUsage: "
+						+totalMemoryHeapUsage+" "+attribute0Unit);
 				Thread.sleep(SAMPLETIME_IN_MS);
 			}
 		} catch (Exception e) {
